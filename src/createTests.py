@@ -30,6 +30,18 @@ createTest5 = """ CREATE TABLE union_test
                  select name from children
                  group by name;"""
 
+createTest6 = """CREATE TABLE non_tech_employees
+AS
+SELECT *
+FROM employee
+WHERE dept_name NOT IN ('IT', 'Engineering','R&D');"""
+
+createTest7 = """CREATE TABLE emp_without_managers
+AS SELECT * from employee where e.manager_id IS NULL"""
+
+createTest8 = """CREATE TABLE managers_without_emp
+AS SELECT * from manager m where NOT EXISTS (select * from employee e where e.manager_id=m.id)"""
+
 # Build the parser
 from sql_yacc import *
 
@@ -64,5 +76,20 @@ result = parser.parse(createTest5, debug=dval)
 assert result == ('union_test', {'employee','manager', 'children'})
 tables.clear()
 print("Pass 5")
+
+result = parser.parse(createTest6, debug=dval)
+assert result == ('non_tech_employees', {'employee'})
+tables.clear()
+print("Pass 6")
+
+result = parser.parse(createTest7, debug=dval)
+assert result == ('emp_without_managers', {'employee'})
+tables.clear()
+print("Pass 7")
+
+result = parser.parse(createTest8, debug=dval)
+assert result == ('managers_without_emp', {'manager','employee'})
+tables.clear()
+print("Pass 8")
 
 print("Pass all")
